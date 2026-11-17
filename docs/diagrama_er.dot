@@ -1,0 +1,8 @@
+digraph ER {
+  rankdir=LR; fontname="Helvetica"; node [fontname="Helvetica", fontsize=10, shape=plaintext]; edge [fontname="Helvetica", fontsize=10, arrowhead=none];
+  editorial [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4"><tr><td bgcolor="#2b7bb9"><font color="white"><b>EDITORIAL</b></font></td></tr><tr><td align="left"><b>PK</b> id_editorial  VARCHAR(10)</td></tr><tr><td align="left">nombre  VARCHAR(60)</td></tr><tr><td align="left">correo_contacto  VARCHAR(60)</td></tr></table>>];
+  reservacion [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4"><tr><td bgcolor="#c0392b"><font color="white"><b>RESERVACION</b></font></td></tr><tr><td align="left"><b>PK</b> id_reservacion  INT</td></tr><tr><td align="left"><b>FK</b> id_stand  VARCHAR(10)</td></tr><tr><td align="left"><b>FK</b> id_editorial  VARCHAR(10)</td></tr><tr><td align="left">fecha_reservacion  DATE</td></tr><tr><td align="left">vigencia_reserva  DATE (NULL)</td></tr><tr><td align="left">porcentaje_pagado  DOUBLE</td></tr></table>>];
+  stand [label=<<table border="1" cellborder="0" cellspacing="0" cellpadding="4"><tr><td bgcolor="#27ae60"><font color="white"><b>STAND</b></font></td></tr><tr><td align="left"><b>PK</b> id_stand  VARCHAR(10)</td></tr><tr><td align="left">dimensiones  VARCHAR(10)</td></tr><tr><td align="left">metros_cuadrados  DOUBLE</td></tr><tr><td align="left">precio  DOUBLE</td></tr><tr><td align="left">estado  VARCHAR(12)</td></tr></table>>];
+  editorial -> reservacion [taillabel="1", headlabel="N", label="realiza", arrowtail=none];
+  stand -> reservacion [taillabel="1", headlabel="N", label="es reservado en"];
+}

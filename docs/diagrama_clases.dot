@@ -1,0 +1,29 @@
+digraph G {
+  rankdir=TB; fontname="Helvetica"; node [fontname="Helvetica", fontsize=10, shape=record, style=filled, fillcolor="#f7f7f7"]; edge [fontname="Helvetica", fontsize=9];
+  subgraph cluster_vista { label="Vista"; style=dashed; color="#2b7bb9";
+    ConsolaVista [label="{ConsolaVista|+mostrarConexionExitosa(desc)\l+mostrarStands(List\<Stand\>)\l+mostrarEditoriales(List\<Editorial\>)\l+mostrarReservaciones(List\<Reservacion\>)\l+mostrarAvisos(titulo, List\<String\>)\l+mostrarError(msg, e)\l}"]; }
+  subgraph cluster_ctrl { label="Controlador"; style=dashed; color="#c0392b";
+    StandController [label="{StandController|+listar(): List\<Stand\>\l+buscarPorId(id): Stand\l+calcularPrecio(Stand, Configuracion): double\l}"];
+    EditorialController [label="{EditorialController|+listar(): List\<Editorial\>\l+buscarPorId(id): Editorial\l}"];
+    ReservacionController [label="{ReservacionController|+listar(): List\<Reservacion\>\l}"];
+    NotificacionController [label="{NotificacionController|+verificarVencimientoReservas(): List\<String\>\l+verificarProntoPago(Configuracion): List\<String\>\l+verificarFechaLimiteCosto(Configuracion): List\<String\>\l}"]; }
+  subgraph cluster_bd { label="Capa de BD (JDBC)"; style=dashed; color="#27ae60";
+    ConexionBD [label="{ConexionBD|+getConexion(): Connection\l+getPropiedad(clave, porDefecto): String\l}"];
+    LecturaBD [label="{LecturaBD|+listarStands(): List\<Stand\>\l+obtenerStandPorId(id): Stand\l+listarEditoriales(): List\<Editorial\>\l+obtenerEditorialPorId(id): Editorial\l+listarReservaciones(): List\<Reservacion\>\l}"];
+    InicializadorBD [label="{InicializadorBD|+inicializar(): void\l+probarConexion(): String\l}"]; }
+  subgraph cluster_modelo { label="Modelo"; style=dashed; color="#8e44ad";
+    Stand [label="{Stand|-idStand: String\l-dimensiones: String\l-metrosCuadrados: double\l-precio: double\l-estado: EstadoStand\l}"];
+    Editorial [label="{Editorial|-idEditorial: String\l-nombre: String\l-correoContacto: String\l}"];
+    Reservacion [label="{Reservacion|-idReservacion: int\l-idStand: String\l-idEditorial: String\l-fechaReservacion: LocalDate\l-vigenciaReserva: LocalDate\l-porcentajePagado: double\l}"];
+    Configuracion [label="{Configuracion|-costoPorMetroCuadrado: double\l-fechaLimiteCosto: LocalDate\l-porcentajeMinimoOcupado: double\l-fechaProntoPago: LocalDate\l-descuentoProntoPago: double\l}"];
+    EstadoStand [label="{«enumeration»\nEstadoStand|DISPONIBLE\lRESERVADO\lOCUPADO\lBLOQUEADO\l}", fillcolor="#fde8e4"]; }
+  Main [label="{Main|+main(String[]): void\l}", fillcolor="#fff6d6"];
+  Main -> ConsolaVista [style=dashed, label="usa"]; Main -> StandController [style=dashed]; Main -> EditorialController [style=dashed]; Main -> ReservacionController [style=dashed]; Main -> NotificacionController [style=dashed]; Main -> InicializadorBD [style=dashed];
+  NotificacionController -> StandController [label="usa"]; NotificacionController -> EditorialController; NotificacionController -> ReservacionController;
+  StandController -> LecturaBD; EditorialController -> LecturaBD; ReservacionController -> LecturaBD;
+  LecturaBD -> ConexionBD [style=dashed, label="getConexion"]; InicializadorBD -> ConexionBD [style=dashed];
+  LecturaBD -> Stand [style=dashed, label="construye"]; LecturaBD -> Editorial [style=dashed]; LecturaBD -> Reservacion [style=dashed];
+  Stand -> EstadoStand [label="estado"];
+  Reservacion -> Stand [label="idStand (FK)", arrowhead=open, style=dotted]; Reservacion -> Editorial [label="idEditorial (FK)", arrowhead=open, style=dotted];
+  StandController -> Configuracion [style=dashed, label="lee costo"];
+}
