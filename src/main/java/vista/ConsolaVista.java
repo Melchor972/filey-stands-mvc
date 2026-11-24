@@ -1,5 +1,6 @@
 package vista;
 
+import excepciones.FileyException;
 import java.util.List;
 import modelo.Editorial;
 import modelo.Reservacion;
@@ -19,6 +20,15 @@ public class ConsolaVista {
 
     public void mostrarError(String mensaje, Exception e) {
         System.err.println("[ERROR] " + mensaje + ": " + e.getMessage());
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        System.out.println(mensaje);
+    }
+
+    /** Errores logicos / de validacion (paquete excepciones). */
+    public void mostrarErrorLogico(FileyException e) {
+        System.out.println("   [RECHAZADO] " + e.getMessage());
     }
 
     public void mostrarStands(List<Stand> stands) {

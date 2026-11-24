@@ -1,29 +1,41 @@
 digraph G {
   rankdir=TB; fontname="Helvetica"; node [fontname="Helvetica", fontsize=10, shape=record, style=filled, fillcolor="#f7f7f7"]; edge [fontname="Helvetica", fontsize=9];
+  Main [label="{Main|+main(String[]): void\l}", fillcolor="#fff6d6"];
   subgraph cluster_vista { label="Vista"; style=dashed; color="#2b7bb9";
-    ConsolaVista [label="{ConsolaVista|+mostrarConexionExitosa(desc)\l+mostrarStands(List\<Stand\>)\l+mostrarEditoriales(List\<Editorial\>)\l+mostrarReservaciones(List\<Reservacion\>)\l+mostrarAvisos(titulo, List\<String\>)\l+mostrarError(msg, e)\l}"]; }
-  subgraph cluster_ctrl { label="Controlador"; style=dashed; color="#c0392b";
-    StandController [label="{StandController|+listar(): List\<Stand\>\l+buscarPorId(id): Stand\l+calcularPrecio(Stand, Configuracion): double\l}"];
-    EditorialController [label="{EditorialController|+listar(): List\<Editorial\>\l+buscarPorId(id): Editorial\l}"];
-    ReservacionController [label="{ReservacionController|+listar(): List\<Reservacion\>\l}"];
-    NotificacionController [label="{NotificacionController|+verificarVencimientoReservas(): List\<String\>\l+verificarProntoPago(Configuracion): List\<String\>\l+verificarFechaLimiteCosto(Configuracion): List\<String\>\l}"]; }
-  subgraph cluster_bd { label="Capa de BD (JDBC)"; style=dashed; color="#27ae60";
-    ConexionBD [label="{ConexionBD|+getConexion(): Connection\l+getPropiedad(clave, porDefecto): String\l}"];
-    LecturaBD [label="{LecturaBD|+listarStands(): List\<Stand\>\l+obtenerStandPorId(id): Stand\l+listarEditoriales(): List\<Editorial\>\l+obtenerEditorialPorId(id): Editorial\l+listarReservaciones(): List\<Reservacion\>\l}"];
-    InicializadorBD [label="{InicializadorBD|+inicializar(): void\l+probarConexion(): String\l}"]; }
-  subgraph cluster_modelo { label="Modelo"; style=dashed; color="#8e44ad";
+    ConsolaVista [label="{ConsolaVista|+mostrarStands / mostrarEditoriales / mostrarReservaciones\l+mostrarAvisos(titulo, avisos)\l+mostrarErrorLogico(FileyException)\l+mostrarError(msg, e)\l}"]; }
+  subgraph cluster_ctrl { label="Controlador (reglas + excepciones)"; style=dashed; color="#c0392b";
+    StandController [label="{StandController|+listar() / buscarPorId(id)\l+crear(Stand) / actualizar(Stand)\l+cambiarEstado(id, estado) / eliminar(id)\l+calcularPrecio(Stand, Configuracion)\l}"];
+    EditorialController [label="{EditorialController|+listar() / buscarPorId(id)\l+crear(Editorial) / actualizar(Editorial)\l+eliminar(id)\l}"];
+    ReservacionController [label="{ReservacionController|+listar()\l+crear(Reservacion) / actualizar(Reservacion)\l+eliminar(id)\l}"];
+    NotificacionController [label="{NotificacionController|+verificarVencimientoReservas()\l+verificarProntoPago(Configuracion)\l+verificarFechaLimiteCosto(Configuracion)\l}"]; }
+  subgraph cluster_exc { label="Excepciones"; style=dashed; color="#d35400";
+    FileyException [label="{FileyException|(extiende Exception)\l}", fillcolor="#ffe9d6"];
+    ValidacionException [label="{ValidacionException}", fillcolor="#ffe9d6"];
+    RegistroDuplicadoException [label="{RegistroDuplicadoException}", fillcolor="#ffe9d6"];
+    RegistroNoEncontradoException [label="{RegistroNoEncontradoException}", fillcolor="#ffe9d6"];
+    ConflictoReservacionException [label="{ConflictoReservacionException}", fillcolor="#ffe9d6"]; }
+  subgraph cluster_bd { label="Capa de BD (JDBC) - solo SQL"; style=dashed; color="#27ae60";
+    ConexionBD [label="{ConexionBD|+getConexion(): Connection\l+getPropiedad(clave, porDefecto)\l}"];
+    StandDAO [label="{StandDAO|+listarTodos() / obtenerPorId(id)\l+insertar / actualizar / eliminar\l}"];
+    EditorialDAO [label="{EditorialDAO|+listarTodos() / obtenerPorId(id)\l+insertar / actualizar / eliminar\l}"];
+    ReservacionDAO [label="{ReservacionDAO|+listarTodos() / obtenerPorId(id)\l+contarPorStand / contarPorEditorial\l+insertar / actualizar / eliminar\l}"];
+    InicializadorBD [label="{InicializadorBD|+inicializar()\l+probarConexion(): String\l}"]; }
+  subgraph cluster_modelo { label="Modelo (datos puros)"; style=dashed; color="#8e44ad";
     Stand [label="{Stand|-idStand: String\l-dimensiones: String\l-metrosCuadrados: double\l-precio: double\l-estado: EstadoStand\l}"];
     Editorial [label="{Editorial|-idEditorial: String\l-nombre: String\l-correoContacto: String\l}"];
     Reservacion [label="{Reservacion|-idReservacion: int\l-idStand: String\l-idEditorial: String\l-fechaReservacion: LocalDate\l-vigenciaReserva: LocalDate\l-porcentajePagado: double\l}"];
     Configuracion [label="{Configuracion|-costoPorMetroCuadrado: double\l-fechaLimiteCosto: LocalDate\l-porcentajeMinimoOcupado: double\l-fechaProntoPago: LocalDate\l-descuentoProntoPago: double\l}"];
     EstadoStand [label="{«enumeration»\nEstadoStand|DISPONIBLE\lRESERVADO\lOCUPADO\lBLOQUEADO\l}", fillcolor="#fde8e4"]; }
-  Main [label="{Main|+main(String[]): void\l}", fillcolor="#fff6d6"];
+
   Main -> ConsolaVista [style=dashed, label="usa"]; Main -> StandController [style=dashed]; Main -> EditorialController [style=dashed]; Main -> ReservacionController [style=dashed]; Main -> NotificacionController [style=dashed]; Main -> InicializadorBD [style=dashed];
-  NotificacionController -> StandController [label="usa"]; NotificacionController -> EditorialController; NotificacionController -> ReservacionController;
-  StandController -> LecturaBD; EditorialController -> LecturaBD; ReservacionController -> LecturaBD;
-  LecturaBD -> ConexionBD [style=dashed, label="getConexion"]; InicializadorBD -> ConexionBD [style=dashed];
-  LecturaBD -> Stand [style=dashed, label="construye"]; LecturaBD -> Editorial [style=dashed]; LecturaBD -> Reservacion [style=dashed];
-  Stand -> EstadoStand [label="estado"];
-  Reservacion -> Stand [label="idStand (FK)", arrowhead=open, style=dotted]; Reservacion -> Editorial [label="idEditorial (FK)", arrowhead=open, style=dotted];
-  StandController -> Configuracion [style=dashed, label="lee costo"];
+  NotificacionController -> StandController; NotificacionController -> EditorialController; NotificacionController -> ReservacionController;
+  StandController -> StandDAO; EditorialController -> EditorialDAO; ReservacionController -> ReservacionDAO;
+  StandController -> ReservacionDAO [style=dashed, label="valida borrado"]; EditorialController -> ReservacionDAO [style=dashed];
+  ReservacionController -> StandDAO [style=dashed, label="cambia estado"]; ReservacionController -> EditorialDAO [style=dashed];
+  StandDAO -> ConexionBD [style=dashed]; EditorialDAO -> ConexionBD [style=dashed]; ReservacionDAO -> ConexionBD [style=dashed]; InicializadorBD -> ConexionBD [style=dashed];
+  StandDAO -> Stand [style=dashed, label="construye"]; EditorialDAO -> Editorial [style=dashed]; ReservacionDAO -> Reservacion [style=dashed];
+  Stand -> EstadoStand;
+  StandController -> Configuracion [style=dashed];
+  ValidacionException -> FileyException [arrowhead=empty]; RegistroDuplicadoException -> FileyException [arrowhead=empty]; RegistroNoEncontradoException -> FileyException [arrowhead=empty]; ConflictoReservacionException -> FileyException [arrowhead=empty];
+  StandController -> FileyException [style=dotted, label="lanza", constraint=false];
 }
